@@ -1,0 +1,25 @@
+region             = "ap-southeast-2"
+cluster_name       = "demo-eks"
+environment        = "dev"
+kubernetes_version = "1.33"
+
+vpc_cidr           = "10.0.0.0/16"
+az_count           = 3
+single_nat_gateway = true
+
+endpoint_public_access = true
+public_access_cidrs    = ["203.0.113.0/24"] # replace with your office/VPN CIDR
+
+node_groups = {
+  general = {
+    instance_types = ["t3.medium"]
+    capacity_type  = "ON_DEMAND"
+    desired_size   = 2
+    min_size       = 2
+    max_size       = 2
+  }
+}
+
+tags = {
+  Owner = "platform-team"
+}
