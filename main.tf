@@ -5,6 +5,9 @@ data "aws_availability_zones" "available" {
 locals {
   azs = slice(data.aws_availability_zones.available.names, 0, var.az_count)
 
+  argocd_admin_user_name_provided = var.argocd_admin_user_name != null ? trimspace(var.argocd_admin_user_name) != "" : false
+  managed_argocd_configured       = var.enable_managed_argocd && local.argocd_admin_user_name_provided
+
   public_subnet_cidrs  = [for i in range(var.az_count) : cidrsubnet(var.vpc_cidr, 8, i)]
   private_subnet_cidrs = [for i in range(var.az_count) : cidrsubnet(var.vpc_cidr, 8, i + 10)]
 
@@ -16,6 +19,19 @@ locals {
     },
     var.tags
   )
+}
+
+resource "terraform_data" "argocd_configuration" {
+  count = var.enable_managed_argocd ? 1 : 0
+
+  input = var.argocd_admin_user_name
+
+  lifecycle {
+    precondition {
+      condition     = local.argocd_admin_user_name_provided
+      error_message = "Set argocd_admin_user_name to an existing Identity Center UserName when enable_managed_argocd is true."
+    }
+  }
 }
 
 module "vpc" {
@@ -77,11 +93,13 @@ module "addons" {
 }
 
 module "argocd_identity_center" {
-  count  = var.enable_managed_argocd ? 1 : 0
+  count  = local.managed_argocd_configured ? 1 : 0
   source = "./modules/identity_center"
 
-  region          = coalesce(var.argocd_identity_center_region, var.region)
-  admin_user_name = coalesce(var.argocd_admin_user_name, "")
+  region          = var.argocd_identity_center_region != null ? var.argocd_identity_center_region : var.region
+  admin_user_name = local.argocd_admin_user_name_provided ? var.argocd_admin_user_name : ""
+
+  depends_on = [terraform_data.argocd_configuration]
 }
 
 resource "aws_eks_pod_identity_association" "lbc" {
@@ -94,7 +112,7 @@ resource "aws_eks_pod_identity_association" "lbc" {
 }
 
 resource "aws_iam_role" "argocd_capability" {
-  count = var.enable_managed_argocd ? 1 : 0
+  count = local.managed_argocd_configured ? 1 : 0
 
   name = "${var.cluster_name}-argocd-capability-role"
   assume_role_policy = jsonencode({
@@ -115,7 +133,7 @@ resource "aws_iam_role" "argocd_capability" {
 }
 
 resource "aws_eks_capability" "argocd" {
-  count = var.enable_managed_argocd ? 1 : 0
+  count = local.managed_argocd_configured ? 1 : 0
 
   cluster_name              = module.eks.cluster_name
   capability_name           = "argocd"
@@ -140,13 +158,6 @@ resource "aws_eks_capability" "argocd" {
           type = "SSO_USER"
         }
       }
-    }
-  }
-
-  lifecycle {
-    precondition {
-      condition     = var.argocd_admin_user_name != null && trimspace(var.argocd_admin_user_name) != ""
-      error_message = "Set argocd_admin_user_name to an existing Identity Center UserName when enable_managed_argocd is true."
     }
   }
 

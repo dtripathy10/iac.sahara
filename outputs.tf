@@ -41,5 +41,5 @@ output "configure_kubectl" {
 
 output "argocd_server_url" {
   description = "URL of the EKS-managed Argo CD server, or null when the capability is disabled."
-  value       = var.enable_managed_argocd ? aws_eks_capability.argocd[0].configuration[0].argo_cd[0].server_url : null
+  value       = local.managed_argocd_configured ? aws_eks_capability.argocd[0].configuration[0].argo_cd[0].server_url : null
 }

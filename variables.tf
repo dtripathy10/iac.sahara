@@ -19,7 +19,7 @@ variable "environment" {
 variable "kubernetes_version" {
   description = "Kubernetes version for the control plane."
   type        = string
-  default     = "1.33"
+  default     = "1.37"
 }
 
 variable "vpc_cidr" {
@@ -122,15 +122,20 @@ variable "enable_managed_argocd" {
 }
 
 variable "argocd_identity_center_region" {
-  description = "AWS Region of the Identity Center instance, if different from the EKS cluster region."
+  description = "AWS Region of the Identity Center instance. Defaults to Sydney (ap-southeast-2)."
   type        = string
-  default     = null
+  default     = "ap-southeast-2"
+
+  validation {
+    condition     = var.argocd_identity_center_region == null ? true : trimspace(var.argocd_identity_center_region) != ""
+    error_message = "argocd_identity_center_region must not be empty when set."
+  }
 }
 
 variable "argocd_admin_user_name" {
   description = "Identity Center UserName to grant the ADMIN role in managed Argo CD."
   type        = string
-  default     = null
+  default     = "argouser-svc"
 
   validation {
     condition     = var.argocd_admin_user_name == null || trimspace(var.argocd_admin_user_name) != ""

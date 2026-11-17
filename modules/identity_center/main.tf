@@ -13,7 +13,7 @@ resource "terraform_data" "instance" {
   lifecycle {
     precondition {
       condition     = length(local.instance_arns) == 1 && length(local.identity_store_ids) == 1
-      error_message = "Expected exactly one AWS Identity Center instance in ${var.region}; make sure the correct Region is configured."
+      error_message = length(local.instance_arns) == 0 ? "No AWS Identity Center instance was found in ${var.region}. Set argocd_identity_center_region to the Identity Center home Region, or set up Identity Center first." : "Expected exactly one AWS Identity Center instance in ${var.region}."
     }
   }
 }

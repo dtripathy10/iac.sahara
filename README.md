@@ -10,6 +10,8 @@ instance and resolves the user's ID from the supplied username:
 ```hcl
 enable_managed_argocd     = true
 argocd_admin_user_name    = "your-identity-center-username"
+# Set this only if Identity Center is in a different Region than EKS.
+# argocd_identity_center_region = "your-identity-center-region"
 ```
 
 Set `argocd_identity_center_region` if the Identity Center instance is in a
@@ -18,7 +20,10 @@ by default; add narrowly scoped permissions only if Argo CD needs access to
 AWS services such as Secrets Manager or CodeConnections. The Terraform
 execution identity needs permission to list Identity Center instances and read
 the selected user. Exactly one Identity Center instance must be available in
-the configured Region.
+the configured Region. If none is found, set
+`argocd_identity_center_region` to the Region where Identity Center is
+configured; if you have not set up Identity Center, enable it in the AWS
+Identity Center console and provision or sync the admin user there.
 
 1. Apply Terraform infrastructure, then connect kubectl:
 
