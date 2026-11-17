@@ -76,6 +76,14 @@ module "addons" {
   depends_on = [module.node_groups]
 }
 
+module "argocd_identity_center" {
+  count  = var.enable_managed_argocd ? 1 : 0
+  source = "./modules/identity_center"
+
+  region          = coalesce(var.argocd_identity_center_region, var.region)
+  admin_user_name = coalesce(var.argocd_admin_user_name, "")
+}
+
 resource "aws_eks_pod_identity_association" "lbc" {
   cluster_name    = module.eks.cluster_name
   namespace       = "kube-system"
@@ -83,4 +91,64 @@ resource "aws_eks_pod_identity_association" "lbc" {
   role_arn        = module.iam.lbc_role_arn
 
   depends_on = [module.addons]
+}
+
+resource "aws_iam_role" "argocd_capability" {
+  count = var.enable_managed_argocd ? 1 : 0
+
+  name = "${var.cluster_name}-argocd-capability-role"
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect = "Allow"
+      Principal = {
+        Service = "capabilities.eks.amazonaws.com"
+      }
+      Action = [
+        "sts:AssumeRole",
+        "sts:TagSession"
+      ]
+    }]
+  })
+
+  tags = local.tags
+}
+
+resource "aws_eks_capability" "argocd" {
+  count = var.enable_managed_argocd ? 1 : 0
+
+  cluster_name              = module.eks.cluster_name
+  capability_name           = "argocd"
+  type                      = "ARGOCD"
+  role_arn                  = aws_iam_role.argocd_capability[0].arn
+  delete_propagation_policy = "RETAIN"
+
+  configuration {
+    argo_cd {
+      namespace = var.argocd_namespace
+
+      aws_idc {
+        idc_instance_arn = module.argocd_identity_center[0].instance_arn
+        idc_region       = var.argocd_identity_center_region
+      }
+
+      rbac_role_mapping {
+        role = "ADMIN"
+
+        identity {
+          id   = module.argocd_identity_center[0].admin_user_id
+          type = "SSO_USER"
+        }
+      }
+    }
+  }
+
+  lifecycle {
+    precondition {
+      condition     = var.argocd_admin_user_name != null && trimspace(var.argocd_admin_user_name) != ""
+      error_message = "Set argocd_admin_user_name to an existing Identity Center UserName when enable_managed_argocd is true."
+    }
+  }
+
+  tags = local.tags
 }

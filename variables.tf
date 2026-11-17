@@ -99,22 +99,55 @@ variable "node_groups" {
 }
 
 variable "addons" {
-      description = "Map of EKS managed add-ons. Leave addon_version null to use the default for the cluster version."
-     type = map(object({
-       addon_version               = optional(string)
-       configuration_values        = optional(string)
-       service_account_role_arn    = optional(string)
-       resolve_conflicts_on_create = optional(string, "OVERWRITE")
-       resolve_conflicts_on_update = optional(string, "PRESERVE")
-     }))
-     default = {
-       vpc-cni                = {}
-       kube-proxy             = {}
-       coredns                = {}
-       eks-pod-identity-agent = {}
-     }
+  description = "Map of EKS managed add-ons. Leave addon_version null to use the default for the cluster version."
+  type = map(object({
+    addon_version               = optional(string)
+    configuration_values        = optional(string)
+    service_account_role_arn    = optional(string)
+    resolve_conflicts_on_create = optional(string, "OVERWRITE")
+    resolve_conflicts_on_update = optional(string, "PRESERVE")
+  }))
+  default = {
+    vpc-cni                = {}
+    kube-proxy             = {}
+    coredns                = {}
+    eks-pod-identity-agent = {}
+  }
 }
 
+variable "enable_managed_argocd" {
+  description = "Create an Argo CD capability managed by Amazon EKS."
+  type        = bool
+  default     = true
+}
+
+variable "argocd_identity_center_region" {
+  description = "AWS Region of the Identity Center instance, if different from the EKS cluster region."
+  type        = string
+  default     = null
+}
+
+variable "argocd_admin_user_name" {
+  description = "Identity Center UserName to grant the ADMIN role in managed Argo CD."
+  type        = string
+  default     = null
+
+  validation {
+    condition     = var.argocd_admin_user_name == null || trimspace(var.argocd_admin_user_name) != ""
+    error_message = "argocd_admin_user_name must not be empty when set."
+  }
+}
+
+variable "argocd_namespace" {
+  description = "Kubernetes namespace for the managed Argo CD capability."
+  type        = string
+  default     = "argocd"
+
+  validation {
+    condition     = trimspace(var.argocd_namespace) != ""
+    error_message = "argocd_namespace must not be empty."
+  }
+}
 
 variable "tags" {
   description = "Additional tags applied to all resources."

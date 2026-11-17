@@ -3,6 +3,11 @@ cluster_name       = "demo-eks"
 environment        = "dev"
 kubernetes_version = "1.33"
 
+# Uncomment to enable Argo CD managed by EKS. Requires an existing Identity
+# Center instance and user.
+# enable_managed_argocd  = true
+# argocd_admin_user_name = "your-identity-center-username"
+
 vpc_cidr           = "10.0.0.0/16"
 az_count           = 3
 single_nat_gateway = true
