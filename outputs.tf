@@ -34,16 +34,6 @@ output "public_subnet_ids" {
   value       = module.vpc.public_subnet_ids
 }
 
-output "ecr_repository_urls" {
-  description = "Map of ECR repository names to image push/pull URLs."
-  value       = module.ecr.repository_urls
-}
-
-output "ecr_repository_arns" {
-  description = "Map of ECR repository names to their ARNs."
-  value       = module.ecr.repository_arns
-}
-
 output "configure_kubectl" {
   description = "Command to update your local kubeconfig."
   value       = "aws eks update-kubeconfig --region ${var.region} --name ${module.eks.cluster_name}"

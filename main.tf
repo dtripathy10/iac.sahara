@@ -84,10 +84,3 @@ resource "aws_eks_pod_identity_association" "lbc" {
 
   depends_on = [module.addons]
 }
-
-module "ecr" {
-  source = "./modules/ecr"
-
-  repository_names = var.ecr_repository_names
-  tags             = local.tags
-}

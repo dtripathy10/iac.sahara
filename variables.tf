@@ -115,16 +115,6 @@ variable "addons" {
      }
 }
 
-variable "ecr_repository_names" {
-  description = "ECR repositories for application images."
-  type        = set(string)
-  default = [
-    "demo-apps/users-api",
-    "demo-apps/products-api",
-    "demo-apps/orders-api",
-    "demo-apps/notifications-api",
-  ]
-}
 
 variable "tags" {
   description = "Additional tags applied to all resources."
