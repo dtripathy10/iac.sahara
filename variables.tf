@@ -111,6 +111,7 @@ variable "addons" {
     vpc-cni                = {}
     kube-proxy             = {}
     coredns                = {}
+    metrics-server         = {}
     eks-pod-identity-agent = {}
   }
 }
