@@ -91,9 +91,9 @@ variable "node_groups" {
     general = {
       instance_types = ["t3.small"]
       capacity_type  = "ON_DEMAND"
-      desired_size   = 1
+      desired_size   = 2
       min_size       = 1
-      max_size       = 1
+      max_size       = 3
     }
   }
 }
@@ -113,6 +113,7 @@ variable "addons" {
     coredns                = {}
     metrics-server         = {}
     eks-pod-identity-agent = {}
+    aws-mountpoint-s3-csi-driver = {}
   }
 }
 
