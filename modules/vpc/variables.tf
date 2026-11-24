@@ -34,6 +34,12 @@ variable "single_nat_gateway" {
   default     = true
 }
 
+variable "enable_karpenter" {
+  description = "Tag private subnets for Karpenter discovery."
+  type        = bool
+  default     = false
+}
+
 variable "tags" {
   description = "Tags applied to resources."
   type        = map(string)

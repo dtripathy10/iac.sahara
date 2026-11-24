@@ -44,6 +44,7 @@ module "vpc" {
   public_subnet_cidrs  = local.public_subnet_cidrs
   private_subnet_cidrs = local.private_subnet_cidrs
   single_nat_gateway   = var.single_nat_gateway
+  enable_karpenter     = var.enable_karpenter
   tags                 = local.tags
 }
 
@@ -90,6 +91,17 @@ module "addons" {
   tags         = local.tags
 
   depends_on = [module.node_groups]
+}
+
+module "karpenter" {
+  count  = var.enable_karpenter ? 1 : 0
+  source = "./modules/karpenter"
+
+  cluster_name              = module.eks.cluster_name
+  cluster_security_group_id = module.eks.cluster_security_group_id
+  tags                      = local.tags
+
+  depends_on = [module.addons]
 }
 
 module "argocd_identity_center" {

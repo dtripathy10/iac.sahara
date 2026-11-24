@@ -17,3 +17,5 @@ override.tf.json
 /.terraform.lock.hcl
 
 cluster-autoscaler/charts/
+
+**/charts

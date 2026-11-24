@@ -39,6 +39,9 @@ Identity Center console and provision or sync the admin user there.
    Kustomize/Helm deployment is in [cluster-autoscaler/](./cluster-autoscaler/);
    see that folder's README for the install command and settings.
 
+   Karpenter is an optional alternative for provisioning workload nodes. See
+   [karpenter/](./karpenter/) for infrastructure and installation instructions.
+
 2. Set the cluster name, region, and VPC ID in
    `apps/platform/components/aws-load-balancer-controller/overlays/dev/values.yaml`.
 3. If `enable_managed_argocd` is `false`, install Argo CD with the `dev` Helm

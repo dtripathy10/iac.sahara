@@ -98,6 +98,12 @@ variable "node_groups" {
   }
 }
 
+variable "enable_karpenter" {
+  description = "Provision AWS infrastructure for Karpenter; install the controller separately."
+  type        = bool
+  default     = true
+}
+
 variable "addons" {
   description = "Map of EKS managed add-ons. Leave addon_version null to use the default for the cluster version."
   type = map(object({
