@@ -1,3 +1,4 @@
+
 resource "aws_eks_node_group" "this" {
   for_each = var.node_groups
 
@@ -38,5 +39,29 @@ resource "aws_eks_node_group" "this" {
   # Let the cluster autoscaler / Karpenter manage the live node count.
   lifecycle {
     ignore_changes = [scaling_config[0].desired_size]
+  }
+}
+
+resource "aws_autoscaling_group_tag" "cluster_autoscaler_enabled" {
+  for_each = aws_eks_node_group.this
+
+  autoscaling_group_name = each.value.resources[0].autoscaling_groups[0].name
+
+  tag {
+    key                 = "k8s.io/cluster-autoscaler/enabled"
+    value               = "true"
+    propagate_at_launch = true
+  }
+}
+
+resource "aws_autoscaling_group_tag" "cluster_autoscaler_cluster" {
+  for_each = aws_eks_node_group.this
+
+  autoscaling_group_name = each.value.resources[0].autoscaling_groups[0].name
+
+  tag {
+    key                 = "k8s.io/cluster-autoscaler/${var.cluster_name}"
+    value               = "owned"
+    propagate_at_launch = true
   }
 }

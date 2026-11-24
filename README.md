@@ -33,6 +33,10 @@ Identity Center console and provision or sync the admin user there.
    aws eks update-kubeconfig --region ap-southeast-2 --name demo-eks
    ```
 
+   Terraform also provisions Cluster Autoscaler permissions through EKS Pod
+   Identity for the `kube-system/cluster-autoscaler` service account. Deploy the
+   autoscaler with that service account to use the role.
+
 2. Set the cluster name, region, and VPC ID in
    `apps/platform/components/aws-load-balancer-controller/overlays/dev/values.yaml`.
 3. If `enable_managed_argocd` is `false`, install Argo CD with the `dev` Helm

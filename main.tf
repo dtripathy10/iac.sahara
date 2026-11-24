@@ -111,6 +111,15 @@ resource "aws_eks_pod_identity_association" "lbc" {
   depends_on = [module.addons]
 }
 
+resource "aws_eks_pod_identity_association" "cluster_autoscaler" {
+  cluster_name    = module.eks.cluster_name
+  namespace       = "kube-system"
+  service_account = "cluster-autoscaler"
+  role_arn        = module.iam.cluster_autoscaler_role_arn
+
+  depends_on = [module.addons]
+}
+
 resource "aws_iam_role" "argocd_capability" {
   count = local.managed_argocd_configured ? 1 : 0
 

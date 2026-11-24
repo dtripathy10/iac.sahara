@@ -114,6 +114,7 @@ variable "addons" {
     metrics-server         = {}
     eks-pod-identity-agent = {}
     aws-mountpoint-s3-csi-driver = {}
+    aws-secrets-store-csi-driver-provider = {}
   }
 }
 

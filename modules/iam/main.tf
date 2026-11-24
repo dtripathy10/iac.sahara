@@ -56,6 +56,72 @@ resource "aws_iam_role_policy_attachment" "node" {
 }
 
 # ---------------------------------------------------------------------------
+# Cluster Autoscaler (Pod Identity)
+# ---------------------------------------------------------------------------
+data "aws_iam_policy_document" "cluster_autoscaler_assume" {
+  statement {
+    actions = ["sts:AssumeRole", "sts:TagSession"]
+
+    principals {
+      type        = "Service"
+      identifiers = ["pods.eks.amazonaws.com"]
+    }
+  }
+}
+
+resource "aws_iam_role" "cluster_autoscaler" {
+  name               = "${var.cluster_name}-cluster-autoscaler-role"
+  assume_role_policy = data.aws_iam_policy_document.cluster_autoscaler_assume.json
+  tags               = var.tags
+}
+
+data "aws_iam_policy_document" "cluster_autoscaler" {
+  statement {
+    sid = "ReadScalingAndInstanceMetadata"
+    actions = [
+      "autoscaling:DescribeAutoScalingGroups",
+      "autoscaling:DescribeAutoScalingInstances",
+      "autoscaling:DescribeLaunchConfigurations",
+      "autoscaling:DescribeScalingActivities",
+      "autoscaling:DescribeTags",
+      "ec2:DescribeAvailabilityZones",
+      "ec2:DescribeImages",
+      "ec2:DescribeInstances",
+      "ec2:DescribeInstanceTypes",
+      "ec2:DescribeLaunchTemplateVersions",
+    ]
+    resources = ["*"]
+  }
+
+  statement {
+    sid = "ScaleTaggedClusterNodeGroups"
+    actions = [
+      "autoscaling:SetDesiredCapacity",
+      "autoscaling:TerminateInstanceInAutoScalingGroup",
+    ]
+    resources = ["*"]
+
+    condition {
+      test     = "StringEquals"
+      variable = "autoscaling:ResourceTag/k8s.io/cluster-autoscaler/enabled"
+      values   = ["true"]
+    }
+
+    condition {
+      test     = "StringEquals"
+      variable = "autoscaling:ResourceTag/k8s.io/cluster-autoscaler/${var.cluster_name}"
+      values   = ["owned"]
+    }
+  }
+}
+
+resource "aws_iam_role_policy" "cluster_autoscaler" {
+  name   = "${var.cluster_name}-cluster-autoscaler-policy"
+  role   = aws_iam_role.cluster_autoscaler.id
+  policy = data.aws_iam_policy_document.cluster_autoscaler.json
+}
+
+# ---------------------------------------------------------------------------
 # AWS Load Balancer Controller (Pod Identity)
 # ---------------------------------------------------------------------------
 data "aws_iam_policy_document" "lbc_assume" {
