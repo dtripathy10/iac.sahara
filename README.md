@@ -35,7 +35,9 @@ Identity Center console and provision or sync the admin user there.
 
    Terraform also provisions Cluster Autoscaler permissions through EKS Pod
    Identity for the `kube-system/cluster-autoscaler` service account. Deploy the
-   autoscaler with that service account to use the role.
+   autoscaler with that service account to use the role. Its standalone
+   Kustomize/Helm deployment is in [cluster-autoscaler/](./cluster-autoscaler/);
+   see that folder's README for the install command and settings.
 
 2. Set the cluster name, region, and VPC ID in
    `apps/platform/components/aws-load-balancer-controller/overlays/dev/values.yaml`.

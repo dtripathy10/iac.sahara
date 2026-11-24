@@ -1,0 +1,32 @@
+cloudProvider: aws
+awsRegion: ap-southeast-2
+
+autoDiscovery:
+  clusterName: demo-eks
+
+image:
+  tag: v1.37.0
+
+rbac:
+  create: true
+  serviceAccount:
+    create: true
+    name: cluster-autoscaler
+
+replicaCount: 1
+
+extraArgs:
+  balance-similar-node-groups: true
+  skip-nodes-with-system-pods: true
+  expander: least-waste
+  stderrthreshold: info
+  v: 4
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 300Mi
+  limits:
+    cpu: 500m
+    memory: 600Mi
+
